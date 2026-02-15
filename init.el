@@ -4,8 +4,9 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(all-the-icons catppuccin-theme consult-better-jumper corfu dashboard
-		   doom-modeline evil-surround magit multi-vterm
+   '(all-the-icons catppuccin-theme consult-better-jumper corfu dap-mode
+		   dashboard doom-modeline evil-surround
+		   exec-path-from-shell magit multi-vterm
 		   splash-screen tempel treesit-auto typst-ts-mode
 		   vertico vterm))
  '(package-vc-selected-packages '((flash :url "https://github.com/Prgebish/flash"))))
@@ -239,3 +240,33 @@
 (with-eval-after-load 'eglot
   (add-to-list 'eglot-server-programs
 	       '((typst-ts-mode) . ("tinymist" "lsp"))))
+
+(use-package dap-mode
+  :ensure t
+  :defer t
+  :commands (dap-breakpoint-toggle dap-debug)
+  :config
+  (dap-mode 1)
+  (dap-ui-mode 1)
+  (dap-tooltip-mode 1)
+  (dap-ui-controls-mode 1)
+  (dap-auto-configure-mode 1)
+  (require 'dap-gdb)
+  (require 'dap-gdb-lldb)
+  (require 'dap-lldb)
+  (with-eval-after-load 'evil 
+    (evil-define-key 'normal 'global (kbd "SPC db") #'dap-breakpoint-toggle)
+    (evil-define-key 'normal 'global (kbd "SPC dd") #'dap-debug)
+  )
+)
+
+(use-package treemacs
+  :ensure t
+  :defer t)
+
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize))
+
+(setq dap-gdb-debug-program '("rust-gdb" "-i" "dap"))

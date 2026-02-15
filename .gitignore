@@ -9,3 +9,4 @@ projects
 tramp
 transient/
 tree-sitter/
+.dap-breakpoints
