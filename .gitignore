@@ -6,3 +6,6 @@ self_downloaded/
 init.el~
 recentf
 projects
+tramp
+transient/
+tree-sitter/

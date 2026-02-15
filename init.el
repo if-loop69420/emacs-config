@@ -5,12 +5,10 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    '(all-the-icons catppuccin-theme consult-better-jumper corfu dashboard
-		   doom-modeline evil-surround magit splash-screen
-		   tempel vertico vterm))
- '(package-vc-selected-packages
-   '((flash :url "https://github.com/Prgebish/flash")
-     (consult-better-jumper :url
-			    "https://github.com/NicholasBHubbard/consult-better-jumper"))))
+		   doom-modeline evil-surround magit multi-vterm
+		   splash-screen tempel treesit-auto typst-ts-mode
+		   vertico vterm))
+ '(package-vc-selected-packages '((flash :url "https://github.com/Prgebish/flash"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -103,8 +101,9 @@
 (use-package eglot
   :ensure t
   :demand t
-  :hook ((rust-mode . eglot-ensure)
+  :hook ((rust-ts-mode . eglot-ensure)
 	 (c-mode . eglot-ensure)
+	 (typst-ts-mode . eglot-ensure)
 	 )
   :config
   (add-hook 'before-save-hook #'eglot-format-buffer nil t)
@@ -205,7 +204,38 @@
   :config
   (setq vterm-max-scrollback 10000))
 
+(use-package multi-vterm
+  :ensure t
+  :config
+  (with-eval-after-load 'evil
+    (evil-define-key 'normal 'global (kbd "SPC t") #'multi-vterm-project)
+    (evil-define-key 'normal 'global (kbd "C-~") #'multi-vterm-toggle))
+)
+  
+
 (add-hook 'vterm-mode-hook
           (lambda ()
             (setq-local evil-insert-state-cursor 'bar)
             (evil-insert-state))) ;; Start in insert mode
+
+(use-package treesit-auto
+  :ensure t
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
+
+(use-package typst-ts-mode
+  :vc (:url "https://codeberg.org/meow_king/typst-ts-mode.git")
+  :ensure t
+  :custom
+  (typst-ts-mode-watch-options "--open")
+  :config
+  (keymap-set typst-ts-mode-map "C-c C-C" #'typst-ts-tmenu)
+)
+
+(setq major-mode-remap-alist '((rust-mode . rust-ts-mode)))
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+	       '((typst-ts-mode) . ("tinymist" "lsp"))))
