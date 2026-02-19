@@ -6,9 +6,9 @@
  '(package-selected-packages
    '(all-the-icons catppuccin-theme consult-better-jumper corfu dap-mode
 		   dashboard doom-modeline evil-surround
-		   exec-path-from-shell magit multi-vterm
-		   splash-screen tempel treesit-auto typst-ts-mode
-		   vertico vterm))
+		   exec-path-from-shell magit multi-vterm org-mode
+		   org-roam splash-screen tempel treesit-auto
+		   typst-ts-mode vertico vterm xenops))
  '(package-vc-selected-packages '((flash :url "https://github.com/Prgebish/flash"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -41,13 +41,6 @@
 	(require 'use-package)
 )
 
-;; Download Evil
-;; (unless (package-installed-p 'evil)
-;;  (package-install 'evil))
-
-;; Enable Evil
-;;(require 'evil)
-
 (use-package evil
   :ensure t
   :demand t
@@ -58,6 +51,16 @@
   (evil-define-key 'normal 'global (kbd "SPC f") #'project-find-file)
   (evil-define-key 'normal 'global (kbd "SPC p") #'project-switch-project)
   (evil-define-key 'normal 'global (kbd "SPC g") #'magit-status)
+  (evil-define-key 'normal 'global (kbd "SPC m r") #'xenops-render)
+  (evil-ex-define-cmd "q" 'kill-current-buffer)
+  (evil-ex-define-cmd "wq" (lambda ()
+			     (interactive)
+			     (save-buffer)
+			     (kill-current-buffer)))
+  (evil-ex-define-cmd "x" (lambda ()
+			     (interactive)
+			     (save-buffer)
+			     (kill-current-buffer)))
   (evil-mode 1)
 )
 
@@ -69,8 +72,9 @@
   :ensure t
   :config
   (global-evil-surround-mode 1)
+  (add-to-list 'evil-surround-pairs-alist
+	'(?l . ("\\[ " . "\\]")))
 )
-
 
 (use-package consult
   :ensure t
@@ -133,7 +137,6 @@
 (use-package tempel
   :ensure t
   :init
-  ;; Setup completion at point
   (defun tempel-setup-capf ()
     (setq-local completion-at-point-functions
                 (cons #'tempel-expand
@@ -189,6 +192,8 @@
 			  (projects . 5)
   ))
   (dashboard-setup-startup-hook))
+(with-eval-after-load 'dashboard
+  (setq initial-buffer-choice t))
 
 (use-package which-key
   :ensure t
@@ -217,7 +222,7 @@
 (add-hook 'vterm-mode-hook
           (lambda ()
             (setq-local evil-insert-state-cursor 'bar)
-            (evil-insert-state))) ;; Start in insert mode
+            (evil-insert-state)))
 
 (use-package treesit-auto
   :ensure t
@@ -270,3 +275,38 @@
   (exec-path-from-shell-initialize))
 
 (setq dap-gdb-debug-program '("rust-gdb" "-i" "dap"))
+
+(use-package org
+  :mode ("\\.org\\'" . org-mode)
+  :config
+  (setq org-agenda-files '("~/notes/todo.org"))
+)
+
+(use-package org-roam
+  :ensure t
+  :custom
+  (require 'org)
+  (require 'magit-section)
+  (require 'emacsql)
+  (org-roam-directory (file-truename "~/notes/roam"))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+	 ("C-c n f" . org-roam-node-find)
+	 ("C-c n g" . org-roam-graph)
+	 ("C-c n i" . org-roam-node-insert)
+	 ("C-c n c" . org-roam-capture)
+  )
+  :config
+  (setq org-roam-database-connector 'sqlite-builtin)
+  (org-roam-db-autosync-mode)
+  )
+
+(use-package xenops
+  :ensure t
+  :hook (org-mode . xenops-mode)
+  :config
+  (setq xenops-image-directory "/tmp/xenops-images/")
+  (setq xenops-reveal-on-entry t)
+  (setq xenops-math-latex-process 'dvisvgm)
+)
+
+

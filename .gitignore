@@ -10,3 +10,8 @@ tramp
 transient/
 tree-sitter/
 .dap-breakpoints
+bookmarks
+bookmarks~
+xenops/
+org-roam.db
+.org-id-locations
